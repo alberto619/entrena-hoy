@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audio Start Test</title>
+<style>
+html,body{margin:0;background:#f7f0e4;font-family:Arial,sans-serif}
+.wrap{padding:18px;text-align:center}
+button{
+  width:100%;padding:16px;border:0;border-radius:14px;
+  background:#165643;color:white;font-weight:800;font-size:16px
+}
+small{display:block;margin-top:10px;color:#6f6a61}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <button id="play">🔔 PROBAR CAMPANA</button>
+  <small>Audio real servido desde GitHub Pages</small>
+</div>
+
+<audio id="startSound" preload="auto" src="./start.mp3"></audio>
+
+<script>
+const audio = document.getElementById("startSound");
+document.getElementById("play").addEventListener("click", async () => {
+  try{
+    audio.currentTime = 0;
+    await audio.play();
+  }catch(err){
+    document.querySelector("small").textContent = "ERROR: " + err.message;
+  }
+});
+</script>
+</body>
+</html>
