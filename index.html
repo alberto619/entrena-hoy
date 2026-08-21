@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101113">
+<title>ENTRENA HOY</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f7f0e4;--surface:#fffaf3;--surface2:#eee1ce;--border:#292a2524;
+  --text:#292a25;--muted:#6f6a61;--accent:#d9653b;--accentText:#fffaf3;
+  --green:#165643;--greenDeep:#103c30;--terracotta:#d9653b;--coral:#cf5551;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.app{width:100%;max-width:480px;min-height:100vh;margin:auto;padding:22px 18px 40px}
+.screen{display:none}.screen.active{display:block}
+.brand{font-size:25px;font-weight:900;letter-spacing:-1px;margin-bottom:5px}
+.brand span{color:var(--accent)}
+.subtitle{color:var(--muted);font-size:13px;margin-bottom:34px}
+h1{margin:0 0 10px;font-size:32px;line-height:1.05;letter-spacing:-1px}
+h2{margin:30px 0 14px;font-size:20px}
+p{color:var(--muted);line-height:1.45}
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+.time-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:14px;padding:20px 6px;font-weight:900;cursor:pointer}
+.time-btn.active{background:var(--accent);border-color:var(--accent);color:var(--accentText)}
+.category-grid{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 8px;margin-right:-18px;padding-right:18px;scrollbar-width:none}.category-grid::-webkit-scrollbar{display:none}
+.category-btn{min-width:188px;scroll-snap-align:start;display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);cursor:pointer;text-align:left}
+.category-btn.active{border-color:var(--accent)}
+.category-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:11px;background:var(--surface2);font-size:21px}
+.category-btn strong{display:block;font-size:16px}
+.category-btn small{color:var(--muted);display:block;margin-top:3px}
+.primary{width:100%;border:0;border-radius:14px;background:var(--accent);color:var(--accentText);padding:17px;font-weight:900;margin-top:22px;cursor:pointer}
+.primary:disabled{opacity:.35;cursor:not-allowed}
+.back{background:none;border:0;color:var(--muted);padding:0;margin-bottom:25px;cursor:pointer}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px}
+.pill{border:1px solid var(--border);background:var(--surface);border-radius:100px;padding:8px 11px;color:var(--muted);font-size:12px}
+.exercise-list{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin-right:-18px;padding-right:18px;scrollbar-width:none}.exercise-list::-webkit-scrollbar{display:none}
+.exercise-row{min-width:240px;scroll-snap-align:start;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border:1px solid var(--border);background:var(--surface);padding:13px 14px;border-radius:12px}
+.exercise-row span{color:var(--muted);font-size:13px}
+.player{text-align:center}
+.progress-text{color:var(--muted);font-size:12px;margin-bottom:14px}
+.progress-bar{height:5px;background:var(--surface2);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.progress-fill{height:100%;width:0;background:var(--accent);transition:width .2s}
+.demo{width:100%;aspect-ratio:4/3;border:1px solid var(--border);border-radius:18px;background:var(--surface);overflow:hidden;display:grid;place-items:center;margin-bottom:22px}
+.demo video{width:100%;height:100%;object-fit:cover;display:none}
+.demo-placeholder{font-size:56px}
+.exercise-name{font-size:28px;font-weight:900;letter-spacing:-.8px}
+.timer{font-size:68px;font-weight:900;font-variant-numeric:tabular-nums;margin:12px 0}
+.cue{min-height:44px;color:var(--muted);max-width:340px;margin:0 auto 18px}
+.next-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--muted);font-size:13px;margin-bottom:12px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.control{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:12px;padding:14px;font-weight:bold;cursor:pointer}
+.complete{text-align:center;padding-top:55px}
+.check{width:90px;height:90px;margin:0 auto 24px;border-radius:50%;background:var(--accent);color:var(--accentText);display:grid;place-items:center;font-size:44px;font-weight:900}
+.result{border:1px solid var(--border);background:var(--surface);border-radius:15px;padding:17px;margin:25px 0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:28px}
+.stat{border:1px solid var(--border);background:var(--surface);border-radius:13px;padding:14px}
+.stat strong{display:block;font-size:21px}
+.stat small{color:var(--muted)}
+.rest-mode .exercise-name,.rest-mode .timer{color:var(--accent)}
+@media (max-width:360px){
+  .app{padding:18px 14px 32px}
+  h1{font-size:28px}
+  .timer{font-size:58px}
+}
+
+.premium-demo{
+  position:relative;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(217,101,59,.11),transparent 42%),
+    linear-gradient(180deg,#fffaf3 0%,#f3e8d8 100%);
+  border:1px solid rgba(41,42,37,.10);
+  box-shadow:0 18px 45px rgba(41,42,37,.08), inset 0 1px 0 rgba(255,255,255,.75);
+}
+.motion-stage{
+  width:100%;height:100%;position:relative;display:grid;place-items:center;overflow:hidden;
+}
+.motion-stage:before{
+  content:"";position:absolute;left:10%;right:10%;bottom:17%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(41,42,37,.18),transparent);
+}
+.motion-label{
+  position:absolute;left:14px;top:13px;z-index:3;
+  font-size:10px;font-weight:900;letter-spacing:.16em;color:var(--green);
+  background:rgba(255,250,243,.78);border:1px solid rgba(22,86,67,.15);
+  border-radius:999px;padding:7px 9px;backdrop-filter:blur(8px);
+}
+.exercise-motion{width:100%;height:100%;display:grid;place-items:center}
+.exercise-motion svg{width:88%;height:88%;overflow:visible}
+.figure-stroke{stroke:var(--greenDeep);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.figure-head{fill:var(--terracotta,#d9653b);stroke:var(--greenDeep);stroke-width:5}
+.figure-accent{stroke:var(--accent);stroke-width:6;stroke-linecap:round;fill:none}
+.motion-shadow{fill:rgba(41,42,37,.09)}
+.motion-caption{font-size:10px;fill:#6f6a61;font-weight:800;letter-spacing:.08em}
+.motion-loop{transform-box:fill-box;transform-origin:center;animation-duration:1.65s;animation-iteration-count:infinite;animation-timing-function:ease-in-out}
+.motion-squat{animation-name:motionSquat}
+.motion-bounce{animation-name:motionBounce}
+.motion-side{animation-name:motionSide}
+.motion-plank{animation-name:motionPlank}
+.motion-core{animation-name:motionCore}
+.motion-bridge{animation-name:motionBridge}
+.motion-kick{animation-name:motionKick}
+.motion-walk{animation-name:motionWalk}
+.motion-pulse{animation-name:motionPulse;animation-duration:1.15s}
+@keyframes motionSquat{0%,100%{transform:translateY(-4px) scaleY(1)}50%{transform:translateY(22px) scaleY(.92)}}
+@keyframes motionBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes motionSide{0%,100%{transform:translateX(-12px)}50%{transform:translateX(12px)}}
+@keyframes motionPlank{0%,100%{transform:rotate(0deg) translateY(0)}50%{transform:rotate(-2deg) translateY(-5px)}}
+@keyframes motionCore{0%,100%{transform:rotate(-4deg) translateY(2px)}50%{transform:rotate(7deg) translateY(-7px)}}
+@keyframes motionBridge{0%,100%{transform:translateY(12px) rotate(0)}50%{transform:translateY(-12px) rotate(-3deg)}}
+@keyframes motionKick{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(9deg) translateY(-7px)}}
+@keyframes motionWalk{0%,100%{transform:translateX(-8px) rotate(-2deg)}50%{transform:translateX(8px) rotate(3deg)}}
+@keyframes motionPulse{0%,100%{transform:translateY(8px)}50%{transform:translateY(18px)}}
+@media (prefers-reduced-motion:reduce){.motion-loop{animation:none!important}}
+
+
+/* V03 — prueba única: demostración premium de SENTADILLA */
+.squat-demo{width:100%;height:100%;padding:48px 12px 12px;display:flex;flex-direction:column;justify-content:center}
+.squat-demo-head{position:absolute;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center}
+.squat-demo-head span{font-size:11px;font-weight:950;letter-spacing:.14em;color:#165643}
+.squat-demo-head small{font-size:9px;font-weight:850;letter-spacing:.08em;color:#8b8174}
+.squat-frames{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr;align-items:center;gap:2px}
+.squat-frame{min-width:0;text-align:center;padding:8px 3px 9px;border-radius:15px;border:1px solid rgba(41,42,37,.08);background:rgba(255,250,243,.72)}
+.squat-frame svg{width:100%;height:145px;display:block}
+.squat-frame b{display:block;font-size:10px;letter-spacing:.06em;color:#292a25}
+.squat-frame span{display:block;margin-top:4px;font-size:9px;color:#7b7369}
+.squat-focus{border-color:rgba(217,101,59,.32);box-shadow:0 8px 24px rgba(217,101,59,.10)}
+.squat-focus svg{animation:squatPhase 1.8s ease-in-out infinite}
+.squat-arrow{text-align:center;font-size:24px;font-weight:300;color:#d9653b}
+.squat-tip{margin:10px auto 0;padding:8px 11px;border-radius:999px;background:#165643;color:#fffaf3;font-size:9px;font-weight:800;letter-spacing:.035em;white-space:nowrap}
+@keyframes squatPhase{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
+@media(max-width:380px){
+  .squat-demo{padding-left:7px;padding-right:7px}
+  .squat-frame svg{height:128px}
+  .squat-tip{font-size:8px;padding:7px 8px}
+}
+
+
+.exercise-demo-video{width:100%;height:100%;object-fit:cover;display:none;background:#eee1ce}
+.exercise-demo-fallback{font-size:11px;font-weight:900;letter-spacing:.12em;color:#6f6a61}
+
+
+.exercise-cue{display:block;margin-top:7px;color:var(--muted);font-size:11px;line-height:1.35;max-width:175px}
+.floating-space{height:76px}
+.floating-primary{
+  position:fixed;z-index:30;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:calc(100% - 36px);max-width:444px;
+  margin:0;box-shadow:0 12px 32px rgba(41,42,37,.20)
+}
+.floating-controls{
+  position:fixed;z-index:30;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:calc(100% - 36px);max-width:444px;
+  padding:8px;background:rgba(247,240,228,.92);backdrop-filter:blur(12px);
+  border:1px solid rgba(41,42,37,.10);border-radius:16px;
+  box-shadow:0 12px 32px rgba(41,42,37,.16)
+}
+#player{padding-bottom:96px}
+#routineDescription{max-width:390px}
+
+</style>
+</head>
+<body>
+<main class="app">
+
+<section id="home" class="screen active">
+  <div class="brand">ENTRENA <span>HOY</span></div>
+  <div class="subtitle">Rutinas en casa · Sin equipo</div>
+
+  <h1>¿Cuánto tiempo tienes?</h1>
+  <p>Elige tu tiempo, desliza para elegir zona y empieza. Sin equipo.</p>
+
+  <div class="time-grid">
+    <button class="time-btn" data-time="7">7 MIN</button>
+    <button class="time-btn" data-time="12">12 MIN</button>
+    <button class="time-btn" data-time="20">20 MIN</button>
+  </div>
+
+  <h2>¿Qué quieres entrenar?</h2>
+
+  <div class="category-grid">
+    <button class="category-btn" data-category="full">
+      <div class="category-icon">🔥</div>
+      <div><strong>Cuerpo completo</strong><small>Todo el cuerpo</small></div>
+    </button>
+
+    <button class="category-btn" data-category="core">
+      <div class="category-icon">💪</div>
+      <div><strong>Core</strong><small>Abdomen y estabilidad</small></div>
+    </button>
+
+    <button class="category-btn" data-category="glutes">
+      <div class="category-icon">🍑</div>
+      <div><strong>Glúteos</strong><small>Trabajo enfocado</small></div>
+    </button>
+
+    <button class="category-btn" data-category="legs">
+      <div class="category-icon">🦵</div>
+      <div><strong>Piernas</strong><small>Fuerza y resistencia</small></div>
+    </button>
+  </div>
+
+  <div class="floating-space"></div><button id="viewWorkout" class="primary floating-primary" disabled>VER MI RUTINA</button>
+
+  <div class="stats">
+    <div class="stat">
+      <strong id="totalWorkouts">0</strong>
+      <small>ENTRENAMIENTOS</small>
+    </div>
+    <div class="stat">
+      <strong><span id="totalMinutes">0</span> min</strong>
+      <small>ENTRENADOS</small>
+    </div>
+  </div>
+</section>
+
+<section id="preview" class="screen">
+  <button id="backHome" class="back">← Volver</button>
+  <h1 id="previewTitle"></h1>
+  <p id="routineDescription">Tu rutina está lista. Sigue los ejercicios en orden.</p>
+
+  <div class="summary">
+    <div class="pill">🏠 En casa</div>
+    <div class="pill">✓ Sin equipo</div>
+    <div id="previewDuration" class="pill"></div>
+  </div>
+
+  <div id="exerciseList" class="exercise-list"></div>
+  <div class="floating-space"></div><button id="startWorkout" class="primary floating-primary">▶ COMENZAR</button>
+</section>
+
+<section id="player" class="screen player">
+  <div id="progressText" class="progress-text"></div>
+
+  <div class="progress-bar">
+    <div id="progressFill" class="progress-fill"></div>
+  </div>
+
+  <div class="demo premium-demo" aria-label="Demostración en video del ejercicio">
+    <div class="motion-stage">
+      <div class="motion-label">DEMOSTRACIÓN</div>
+      <video id="exerciseDemoVideo" class="exercise-demo-video" muted loop playsinline autoplay preload="auto"></video>
+      <div id="exerciseDemoFallback" class="exercise-demo-fallback">VIDEO EN PREPARACIÓN</div>
+    </div>
+  </div>
+
+  <div id="exerciseName" class="exercise-name"></div>
+  <div id="timer" class="timer">00:00</div>
+  <div id="cue" class="cue"></div>
+  <div id="nextBox" class="next-box"></div>
+
+  <div class="controls floating-controls">
+    <button id="pauseButton" class="control">⏸ PAUSAR</button>
+    <button id="skipButton" class="control">SALTAR →</button>
+  </div>
+</section>
+
+<section id="complete" class="screen complete">
+  <div class="check">✓</div>
+  <h1>ENTRENAMIENTO COMPLETADO</h1>
+  <p>Listo. Ya entrenaste hoy.</p>
+
+  <div class="result">
+    <strong id="resultName"></strong>
+    <p id="resultDetails"></p>
+  </div>
+
+  <button id="returnHome" class="primary">VOLVER AL INICIO</button>
+</section>
+
+</main>
+
+<script>
+"use strict";
+
+const exercises = {
+  march:{name:"Marcha activa",cue:"Mantén el torso erguido y mueve también los brazos."},
+  squat:{name:"Sentadilla",cue:"Pecho arriba y rodillas alineadas con los pies."},
+  stepJack:{name:"Step Jack",cue:"Alterna los pasos laterales manteniendo un ritmo cómodo."},
+  reverseLunge:{name:"Zancada atrás",cue:"Da el paso hacia atrás y mantén el torso estable."},
+  mountainSlow:{name:"Mountain Climbers",cue:"Manos firmes y abdomen activo."},
+  jumpingJack:{name:"Jumping Jacks",cue:"Mantén un ritmo que puedas sostener."},
+  walkout:{name:"Walkout",cue:"Avanza con las manos de forma controlada."},
+  bridge:{name:"Puente de glúteo",cue:"Aprieta los glúteos arriba sin arquear la espalda."},
+  plank:{name:"Plancha",cue:"Mantén abdomen y glúteos activos."},
+  deadBug:{name:"Dead Bug",cue:"Mantén la espalda baja apoyada."},
+  heelTap:{name:"Heel Taps",cue:"Mantén tensión en el abdomen."},
+  birdDog:{name:"Bird Dog",cue:"Evita girar la cadera."},
+  sidePlank:{name:"Plancha lateral",cue:"Mantén la cadera elevada y el cuerpo alineado."},
+  bicycle:{name:"Bicicleta controlada",cue:"Muévete despacio y evita tirar del cuello."},
+  sumo:{name:"Sentadilla sumo",cue:"Abre los pies y baja de forma controlada."},
+  donkey:{name:"Donkey Kick",cue:"Mantén la cadera estable."},
+  hydrant:{name:"Fire Hydrant",cue:"Evita girar el torso."},
+  pulses:{name:"Pulsos de sentadilla",cue:"Mantén tensión con un recorrido corto."},
+  calves:{name:"Elevación de talones",cue:"Sube y baja de forma controlada."},
+  skater:{name:"Skater sin salto",cue:"Desplázate de lado a lado con control."},
+  pushup:{name:"Lagartijas",cue:"Mantén el cuerpo alineado. Usa rodillas apoyadas si necesitas la variante principiante."}
+};
+
+const workouts = {
+  full:{
+    7:[
+      ["march",40],["rest",15],["squat",40],["rest",15],["stepJack",40],["rest",15],
+      ["reverseLunge",40],["rest",15],["mountainSlow",40],["rest",15],["march",40],["rest",15],
+      ["squat",40],["rest",15],["stepJack",40]
+    ],
+    12:[
+      ["jumpingJack",40],["rest",20],["squat",40],["rest",20],["pushup",40],["rest",20],
+      ["reverseLunge",40],["rest",20],["mountainSlow",40],["rest",20],["bridge",40],["rest",20],
+      ["jumpingJack",40],["rest",20],["squat",40],["rest",20],["walkout",40],["rest",20],
+      ["reverseLunge",40],["rest",20],["mountainSlow",40],["rest",20],["bridge",40]
+    ],
+    20:[
+      ["jumpingJack",40],["rest",20],["squat",40],["rest",20],["pushup",40],["rest",20],
+      ["reverseLunge",40],["rest",20],["mountainSlow",40],["rest",20],["bridge",40],["rest",20],
+      ["stepJack",40],["rest",20],["plank",40],["rest",20],
+      ["jumpingJack",40],["rest",20],["squat",40],["rest",20],["walkout",40],["rest",20],
+      ["reverseLunge",40],["rest",20],["mountainSlow",40],["rest",20],["bridge",40],["rest",20],
+      ["stepJack",40],["rest",20],["plank",40],["rest",20],
+      ["march",40],["rest",20],["squat",40],["rest",20],["mountainSlow",40],["rest",20],["bridge",40]
+    ]
+  },
+  core:{
+    7:[
+      ["deadBug",40],["rest",15],["heelTap",40],["rest",15],["birdDog",40],["rest",15],
+      ["plank",40],["rest",15],["mountainSlow",40],["rest",15],["deadBug",40],["rest",15],
+      ["heelTap",40],["rest",15],["birdDog",40]
+    ],
+    12:[
+      ["deadBug",40],["rest",20],["plank",40],["rest",20],["heelTap",40],["rest",20],
+      ["birdDog",40],["rest",20],["sidePlank",30,"Izquierda"],["rest",15],["sidePlank",30,"Derecha"],
+      ["rest",20],["mountainSlow",40],["rest",20],["deadBug",40],["rest",20],["heelTap",40],
+      ["rest",20],["birdDog",40],["rest",20],["sidePlank",30,"Izquierda"],["rest",15],
+      ["sidePlank",30,"Derecha"]
+    ],
+    20:[
+      ["deadBug",40],["rest",20],["heelTap",40],["rest",20],["plank",40],["rest",20],
+      ["birdDog",40],["rest",20],["bicycle",40],["rest",20],["sidePlank",30,"Izquierda"],
+      ["rest",15],["sidePlank",30,"Derecha"],["rest",20],["mountainSlow",40],["rest",20],
+      ["deadBug",40],["rest",20],["heelTap",40],["rest",20],["plank",40],["rest",20],
+      ["birdDog",40],["rest",20],["bicycle",40],["rest",20],["sidePlank",30,"Izquierda"],
+      ["rest",15],["sidePlank",30,"Derecha"],["rest",20],["mountainSlow",40],["rest",20],
+      ["deadBug",40],["rest",20],["plank",40],["rest",20],["heelTap",40],["rest",20],["mountainSlow",40]
+    ]
+  },
+  glutes:{
+    7:[
+      ["bridge",40],["rest",15],["donkey",30,"Izquierda"],["rest",10],["donkey",30,"Derecha"],
+      ["rest",15],["hydrant",30,"Izquierda"],["rest",10],["hydrant",30,"Derecha"],["rest",15],
+      ["sumo",40],["rest",15],["pulses",40]
+    ],
+    12:[
+      ["sumo",40],["rest",20],["bridge",40],["rest",20],["donkey",30,"Izquierda"],["rest",10],
+      ["donkey",30,"Derecha"],["rest",20],["hydrant",30,"Izquierda"],["rest",10],
+      ["hydrant",30,"Derecha"],["rest",20],["pulses",40],["rest",20],["reverseLunge",40],
+      ["rest",20],["bridge",40],["rest",20],["sumo",40],["rest",20],["pulses",40]
+    ],
+    20:[
+      ["sumo",40],["rest",20],["bridge",40],["rest",20],["reverseLunge",40],["rest",20],
+      ["donkey",30,"Izquierda"],["rest",10],["donkey",30,"Derecha"],["rest",20],
+      ["hydrant",30,"Izquierda"],["rest",10],["hydrant",30,"Derecha"],["rest",20],
+      ["pulses",40],["rest",20],["sumo",40],["rest",20],["bridge",40],["rest",20],
+      ["reverseLunge",40],["rest",20],["donkey",30,"Izquierda"],["rest",10],["donkey",30,"Derecha"],
+      ["rest",20],["hydrant",30,"Izquierda"],["rest",10],["hydrant",30,"Derecha"],["rest",20],
+      ["pulses",40],["rest",20],["bridge",40],["rest",20],["sumo",40],["rest",20],["pulses",40]
+    ]
+  },
+  legs:{
+    7:[
+      ["squat",40],["rest",15],["reverseLunge",40],["rest",15],["sumo",40],["rest",15],
+      ["calves",40],["rest",15],["march",40],["rest",15],["squat",40],["rest",15],["reverseLunge",40]
+    ],
+    12:[
+      ["squat",40],["rest",20],["reverseLunge",40],["rest",20],["sumo",40],["rest",20],
+      ["calves",40],["rest",20],["pulses",40],["rest",20],["stepJack",40],["rest",20],
+      ["squat",40],["rest",20],["reverseLunge",40],["rest",20],["sumo",40],["rest",20],
+      ["calves",40],["rest",20],["pulses",40]
+    ],
+    20:[
+      ["squat",40],["rest",20],["reverseLunge",40],["rest",20],["sumo",40],["rest",20],
+      ["calves",40],["rest",20],["pulses",40],["rest",20],["skater",40],["rest",20],
+      ["bridge",40],["rest",20],["march",40],["rest",20],
+      ["squat",40],["rest",20],["reverseLunge",40],["rest",20],["sumo",40],["rest",20],
+      ["calves",40],["rest",20],["pulses",40],["rest",20],["skater",40],["rest",20],
+      ["bridge",40],["rest",20],["march",40],["rest",20],
+      ["squat",40],["rest",20],["reverseLunge",40],["rest",20],["sumo",40],["rest",20],["calves",40]
+    ]
+  }
+};
+
+const categoryNames = {full:"CUERPO COMPLETO",core:"CORE",glutes:"GLÚTEOS",legs:"PIERNAS"};
+
+const categoryDescriptions = {
+  full:"Una sesión variada para mover todo el cuerpo y elevar el ritmo sin equipo.",
+  core:"Trabajo directo de abdomen y estabilidad con movimientos controlados.",
+  glutes:"Sesión enfocada en glúteos y piernas con ejercicios simples de suelo y de pie.",
+  legs:"Trabajo de piernas para fuerza y resistencia usando solo tu peso corporal."
+};
+
+let selectedTime = null;
+let selectedCategory = null;
+let activeWorkout = [];
+let stepIndex = 0;
+let secondsLeft = 0;
+let timerId = null;
+let paused = false;
+
+const screens = document.querySelectorAll(".screen");
+const viewWorkout = document.getElementById("viewWorkout");
+const exerciseList = document.getElementById("exerciseList");
+const exerciseDemoVideo = document.getElementById("exerciseDemoVideo");
+const exerciseDemoFallback = document.getElementById("exerciseDemoFallback");
+
+const GITHUB_PAGES_BASE = "https://TU_USUARIO.github.io/entrena-hoy/videos/";
+
+const demoVideos = {
+  march:GITHUB_PAGES_BASE + "marcha_activa.mp4",
+  squat:GITHUB_PAGES_BASE + "sentadilla.mp4",
+  stepJack:GITHUB_PAGES_BASE + "step_jack.mp4",
+  mountainSlow:GITHUB_PAGES_BASE + "mountain_climbers.mp4",
+  jumpingJack:GITHUB_PAGES_BASE + "jumping_jacks.mp4",
+  walkout:GITHUB_PAGES_BASE + "walkout.mp4",
+  bridge:GITHUB_PAGES_BASE + "puente_gluteo.mp4",
+  plank:GITHUB_PAGES_BASE + "plancha.mp4",
+  pushup:GITHUB_PAGES_BASE + "lagartijas_niveles.mp4"
+};
+const exerciseName = document.getElementById("exerciseName");
+const timer = document.getElementById("timer");
+const cue = document.getElementById("cue");
+const nextBox = document.getElementById("nextBox");
+const pauseButton = document.getElementById("pauseButton");
+
+document.querySelectorAll(".time-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("active"));
+    button.classList.add("active");
+    selectedTime = Number(button.dataset.time);
+    updateMainButton();
+  });
+});
+
+document.querySelectorAll(".category-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+    button.classList.add("active");
+    selectedCategory = button.dataset.category;
+    updateMainButton();
+  });
+});
+
+function updateMainButton(){
+  viewWorkout.disabled = !(selectedTime && selectedCategory);
+}
+
+viewWorkout.addEventListener("click", () => {
+  activeWorkout = workouts[selectedCategory][selectedTime];
+  renderPreview();
+  showScreen("preview");
+});
+
+function renderPreview(){
+  document.getElementById("previewTitle").textContent = `${categoryNames[selectedCategory]} · ${selectedTime} MIN`;
+  document.getElementById("previewDuration").textContent = `${selectedTime} minutos`;
+  document.getElementById("routineDescription").textContent = categoryDescriptions[selectedCategory];
+  exerciseList.innerHTML = "";
+  const exerciseSteps = activeWorkout.filter(step => step[0] !== "rest");
+
+  exerciseSteps.forEach((step,index) => {
+    const id = step[0], duration = step[1], side = step[2];
+    const row = document.createElement("div");
+    row.className = "exercise-row";
+    const name = exercises[id].name + (side ? ` · ${side}` : "");
+    row.innerHTML = `
+      <div>
+        <strong>${index + 1}. ${name}</strong>
+        <small class="exercise-cue">${exercises[id].cue}</small>
+      </div>
+      <span>${duration}s</span>`;
+    exerciseList.appendChild(row);
+  });
+}
+
+document.getElementById("startWorkout").addEventListener("click", () => {
+  stepIndex = 0;
+  paused = false;
+  pauseButton.textContent = "⏸ PAUSAR";
+  showScreen("player");
+  loadStep();
+});
+
+function loadStep(){
+  clearInterval(timerId);
+
+  if(stepIndex >= activeWorkout.length){
+    finishWorkout();
+    return;
+  }
+
+  const step = activeWorkout[stepIndex];
+  const id = step[0], duration = step[1], side = step[2];
+  secondsLeft = duration;
+
+  if(id === "rest"){ renderRest(); } else { renderExercise(id,side); }
+
+  updateTimer();
+  timerId = setInterval(tick,1000);
+}
+
+function tick(){
+  if(paused) return;
+  secondsLeft--;
+  updateTimer();
+
+  if(secondsLeft <= 0){
+    clearInterval(timerId);
+    stepIndex++;
+    loadStep();
+  }
+}
+
+function renderExercise(id,side){
+  document.getElementById("player").classList.remove("rest-mode");
+  const data = exercises[id];
+
+  exerciseName.textContent = data.name + (side ? ` · ${side}` : "");
+  cue.textContent = data.cue;
+
+  renderMotion(id, side);
+  updateProgress();
+
+  const nextExercise = findNextExercise();
+  nextBox.textContent = nextExercise ? `SIGUIENTE: ${nextExercise}` : "ÚLTIMO EJERCICIO";
+}
+
+function renderMotion(id, side){
+  const src = demoVideos[id];
+
+  exerciseDemoVideo.pause();
+  exerciseDemoVideo.removeAttribute("src");
+  exerciseDemoVideo.load();
+  exerciseDemoVideo.style.display = "none";
+  exerciseDemoFallback.style.display = "block";
+  exerciseDemoFallback.textContent = src ? "CARGANDO DEMOSTRACIÓN…" : "VIDEO EN PREPARACIÓN";
+
+  if(!src) return;
+
+  exerciseDemoVideo.src = src;
+  exerciseDemoVideo.oncanplay = () => {
+    exerciseDemoFallback.style.display = "none";
+    exerciseDemoVideo.style.display = "block";
+    exerciseDemoVideo.play().catch(() => {});
+  };
+  exerciseDemoVideo.onerror = () => {
+    exerciseDemoVideo.style.display = "none";
+    exerciseDemoFallback.style.display = "block";
+    exerciseDemoFallback.textContent = "VIDEO NO DISPONIBLE";
+  };
+}
+
+function renderRest(){
+  document.getElementById("player").classList.add("rest-mode");
+
+  exerciseDemoVideo.pause();
+  exerciseDemoVideo.style.display = "none";
+  exerciseDemoFallback.style.display = "block";
+  exerciseDemoFallback.textContent = "RESPIRA · RECUPERA";
+
+  exerciseName.textContent = "DESCANSA";
+  cue.textContent = "Respira. El siguiente ejercicio comienza automáticamente.";
+
+  const nextExercise = findNextExercise();
+  nextBox.textContent = nextExercise ? `SIGUIENTE: ${nextExercise}` : "ÚLTIMO BLOQUE";
+  updateProgress();
+}
+
+function findNextExercise(){
+  for(let i = stepIndex + 1; i < activeWorkout.length; i++){
+    if(activeWorkout[i][0] !== "rest"){
+      const step = activeWorkout[i];
+      const id = step[0], side = step[2];
+      return exercises[id].name + (side ? ` · ${side}` : "");
+    }
+  }
+  return null;
+}
+
+function updateProgress(){
+  const totalExercises = activeWorkout.filter(step => step[0] !== "rest").length;
+  let completedExercises = 0;
+
+  for(let i = 0; i < stepIndex; i++){
+    if(activeWorkout[i][0] !== "rest"){ completedExercises++; }
+  }
+
+  const currentIsExercise = activeWorkout[stepIndex] && activeWorkout[stepIndex][0] !== "rest";
+  const currentNumber = Math.min(completedExercises + (currentIsExercise ? 1 : 0), totalExercises);
+
+  document.getElementById("progressText").textContent = `EJERCICIO ${currentNumber} DE ${totalExercises}`;
+  const percent = totalExercises === 0 ? 0 : (completedExercises / totalExercises) * 100;
+  document.getElementById("progressFill").style.width = `${percent}%`;
+}
+
+function updateTimer(){
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  timer.textContent = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+}
+
+pauseButton.addEventListener("click", () => {
+  paused = !paused;
+  pauseButton.textContent = paused ? "▶ CONTINUAR" : "⏸ PAUSAR";
+  if(paused){
+    exerciseDemoVideo.pause();
+  }else if(exerciseDemoVideo.src){
+    exerciseDemoVideo.play().catch(() => {});
+  }
+});
+
+document.getElementById("skipButton").addEventListener("click", () => {
+  clearInterval(timerId);
+  stepIndex++;
+  loadStep();
+});
+
+function finishWorkout(){
+  clearInterval(timerId);
+  const workoutsDone = Number(localStorage.getItem("entrenaHoyWorkouts") || 0) + 1;
+  const minutesDone = Number(localStorage.getItem("entrenaHoyMinutes") || 0) + selectedTime;
+
+  localStorage.setItem("entrenaHoyWorkouts", String(workoutsDone));
+  localStorage.setItem("entrenaHoyMinutes", String(minutesDone));
+
+  document.getElementById("resultName").textContent = `${categoryNames[selectedCategory]} · ${selectedTime} MIN`;
+  document.getElementById("resultDetails").textContent =
+    `${workoutsDone} entrenamientos completados · ${minutesDone} minutos acumulados`;
+
+  refreshStats();
+  showScreen("complete");
+}
+
+document.getElementById("backHome").addEventListener("click", () => showScreen("home"));
+document.getElementById("returnHome").addEventListener("click", () => showScreen("home"));
+
+function showScreen(id){
+  screens.forEach(screen => screen.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+function refreshStats(){
+  document.getElementById("totalWorkouts").textContent = localStorage.getItem("entrenaHoyWorkouts") || "0";
+  document.getElementById("totalMinutes").textContent = localStorage.getItem("entrenaHoyMinutes") || "0";
+}
+
+refreshStats();
+</script>
+</body>
+</html>
