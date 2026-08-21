@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audio Bridge</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}
+</style>
+</head>
+<body>
+<audio id="startSound" preload="auto"
+  src="https://alberto619.github.io/entrena-hoy/start.mp3"></audio>
+
+<script>
+const startSound = document.getElementById("startSound");
+
+window.addEventListener("message", async (event) => {
+  if(!event.data || event.data.type !== "playStart") return;
+
+  try{
+    startSound.currentTime = 0;
+    await startSound.play();
+  }catch(err){
+    console.error("Audio bridge error:", err);
+  }
+});
+</script>
+</body>
+</html>
