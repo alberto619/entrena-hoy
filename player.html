@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#eee1ce}
+video{width:100%;height:100%;object-fit:cover;display:block;background:#eee1ce}
+</style>
+</head>
+<body>
+<video id="v" autoplay muted loop playsinline preload="auto"></video>
+<script>
+"use strict";
+const params = new URLSearchParams(location.search);
+const file = params.get("v") || "";
+const allowed = /^[a-zA-Z0-9_.-]+\.mp4$/;
+const video = document.getElementById("v");
+
+if(allowed.test(file)){
+  video.src = "./" + file;
+  video.play().catch(()=>{});
+}
+
+window.addEventListener("message", (event) => {
+  if(!event.data || !event.data.type) return;
+  if(event.data.type === "pause") video.pause();
+  if(event.data.type === "play") video.play().catch(()=>{});
+});
+</script>
+</body>
+</html>
