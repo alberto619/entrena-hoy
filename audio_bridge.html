@@ -44,8 +44,16 @@ async function playSound(name){
 }
 
 window.addEventListener("message", (event) => {
-  if(!event.data || event.data.type !== "playSound") return;
-  playSound(event.data.sound);
+  if(!event.data) return;
+
+  if(event.data.type === "playStart"){
+    playSound("start");
+    return;
+  }
+
+  if(event.data.type === "playSound"){
+    playSound(event.data.sound);
+  }
 });
 </script>
 
