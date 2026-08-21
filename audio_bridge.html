@@ -5,12 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <title>ENTRENA HOY Audio Bridge</title>
-<style>
-html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}
-</style>
+<style>html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}</style>
 </head>
 <body>
-
 <audio id="start" preload="auto" src="./start.mp3"></audio>
 <audio id="tick" preload="auto" src="./tick.mp3"></audio>
 <audio id="tickMedium" preload="auto" src="./tick_medium.mp3"></audio>
@@ -33,7 +30,6 @@ const sounds = {
 async function playSound(name){
   const audio = sounds[name];
   if(!audio) return;
-
   try{
     audio.pause();
     audio.currentTime = 0;
@@ -55,7 +51,9 @@ window.addEventListener("message", (event) => {
     playSound(event.data.sound);
   }
 });
-</script>
 
+// Tell parent that the bridge is definitely ready.
+window.parent.postMessage({type:"audioReady"},"*");
+</script>
 </body>
 </html>
